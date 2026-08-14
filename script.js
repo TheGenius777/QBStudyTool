@@ -82,12 +82,20 @@ async function searchQB() {
 
     else if (question.leadin) {
         // Bonus
-        questionDiv.innerHTML =
+        let bonusHTML =
             "<hr>" +
-            "<p>" + question.leadin + "</p>" +
-            "<strong>Bonus Answers: " +
-            (question.answers_sanitized || question.answers || "Unknown") +
-            "</strong>";
+            "<p><strong>Bonus:</strong> " + question.leadin + "</p>";
+
+        for (let i = 0; i < question.parts.length; i++) {
+            bonusHTML +=
+                "<p><strong>" + (i + 1) + ".</strong> " +
+                question.parts[i] + "</p>" +
+                "<strong>Answer: " +
+                question.answers_sanitized[i] +
+                "</strong>";
+        }
+
+        questionDiv.innerHTML = bonusHTML;
     }
 
     resultsDiv.appendChild(questionDiv);
