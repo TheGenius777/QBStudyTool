@@ -37,14 +37,14 @@ async function searchQB() {
     }
 
     questions.forEach(question => {
-        const questionDiv = document.createElement("div");
+    const questionDiv = document.createElement("div");
 
-        questionDiv.innerHTML = `
-            <hr>
-            <p>${question.question}</p>
-            <strong>Answer: ${question.answer}</strong>
-        `;
+    questionDiv.innerHTML = `
+        <hr>
+        <p>${question.question || ""}</p>
+        <strong>Answer: ${question.answer_sanitized || question.answer || "Unknown"}</strong>
+    `;
 
-        resultsDiv.appendChild(questionDiv);
+    resultsDiv.appendChild(questionDiv);
     });
 }
