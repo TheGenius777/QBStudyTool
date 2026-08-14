@@ -1,18 +1,20 @@
 async function searchQB() {
     const answer = document.getElementById("answerInput").value;
 
-    const difficultyOptions = document.querySelectorAll(
-        "#difficulty input[type='checkbox']"
-    );
-
-    const difficulties = Array.from(difficultyOptions)
-        .filter(checkbox => checkbox.checked)
-        .map(checkbox => checkbox.value);
-
     if (!answer) {
         alert("Please enter an answerline.");
         return;
     }
+
+    const checkboxes = document.querySelectorAll("#difficulty input");
+
+    const difficulties = [];
+
+    checkboxes.forEach(function(checkbox) {
+        if (checkbox.checked) {
+            difficulties.push(checkbox.value);
+        }
+    });
 
     let url =
         "https://www.qbreader.org/api/query" +
@@ -24,8 +26,12 @@ async function searchQB() {
         url += "&difficulties=" + difficulties.join(",");
     }
 
+    console.log("Searching:", url);
+
     const response = await fetch(url);
     const data = await response.json();
+
+    console.log(data);
 
     const resultsDiv = document.getElementById("results");
 
@@ -33,23 +39,24 @@ async function searchQB() {
 
     const questions = [
         ...(data.tossups?.questionArray || [])
-    ].filter(question => question && question.question);
+    ].filter(function(question) {
+        return question && question.question;
+    });
 
     if (questions.length === 0) {
         resultsDiv.innerHTML = "<p>No questions found.</p>";
         return;
     }
 
-    questions.forEach(question => {
+    questions.forEach(function(question) {
         const questionDiv = document.createElement("div");
 
-        questionDiv.innerHTML = `
-            <hr>
-            <p>${question.question}</p>
-            <strong>
-                Answer: ${question.answer_sanitized || question.answer || "Unknown"}
-            </strong>
-        `;
+        questionDiv.innerHTML =
+            "<hr>" +
+            "<p>" + question.question + "</p>" +
+            "<strong>Answer: " +
+            (question.answer_sanitized || question.answer || "Unknown") +
+            "</strong>";
 
         resultsDiv.appendChild(questionDiv);
     });
