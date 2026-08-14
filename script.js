@@ -1,6 +1,8 @@
 async function searchQB() {
     const answer = document.getElementById("answerInput").value;
-    const difficulty = document.getElementById("difficulty").value;
+    const difficultyOptions = document.getElementById("difficulty");
+    const difficulties = Array.from(difficultyOptions.selectedOptions)
+        .map(option => option.value);
 
     if (!answer) {
         alert("Please enter an answerline.");
@@ -13,8 +15,8 @@ async function searchQB() {
     "&searchType=answer" +
     "&questionType=all";
 
-    if (difficulty !== "") {
-    url += "&difficulties=" + difficulty;
+    if (difficulties.length > 0) {
+    url += "&difficulties=" + difficulties.join(",");
     }    
 
     const response = await fetch(url);
