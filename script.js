@@ -1,16 +1,21 @@
 async function searchQB() {
     const answer = document.getElementById("answerInput").value;
+    const difficulty = document.getElementById("difficulty").value;
 
     if (!answer) {
         alert("Please enter an answerline.");
         return;
     }
 
-    const url =
-        "https://www.qbreader.org/api/query" +
-        "?q=" + encodeURIComponent(answer) +
-        "&searchType=answer" +
-        "&questionType=all";
+    let url =
+    "https://www.qbreader.org/api/query" +
+    "?q=" + encodeURIComponent(answer) +
+    "&searchType=answer" +
+    "&questionType=all";
+
+    if (difficulty !== "") {
+    url += "&difficulties=" + difficulty;
+    }    
 
     const response = await fetch(url);
     const data = await response.json();
