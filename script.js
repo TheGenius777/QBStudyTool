@@ -27,9 +27,8 @@ async function searchQB() {
     resultsDiv.innerHTML = "";
 
     const questions = [
-        ...data.tossups.questionArray,
-        ...data.bonuses.questionArray
-    ];
+    ...(data.tossups?.questionArray || [])
+    ].filter(question => question && question.question);
 
     if (questions.length === 0) {
         resultsDiv.innerHTML = "<p>No questions found.</p>";
