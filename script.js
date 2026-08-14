@@ -1,8 +1,9 @@
 async function searchQB() {
     const answer = document.getElementById("answerInput").value;
-    const difficultyOptions = document.getElementById("difficulty");
-    const difficulties = Array.from(difficultyOptions.selectedOptions)
-        .map(option => option.value);
+    const difficultyOptions = document.querySelectorAll("#difficulty input");
+    const difficulties = Array.from(difficultyOptions)
+    .filter(checkbox => checkbox.checked)
+    .map(checkbox => checkbox.value);
 
     if (!answer) {
         alert("Please enter an answerline.");
