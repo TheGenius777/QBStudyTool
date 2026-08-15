@@ -43,6 +43,17 @@ categoryCheckboxes.forEach(function(checkbox) {
     if (categories.length > 0) {
     url += "&categories=" + categories.join(",");
     }
+
+    const startYear = document.getElementById("startYear").value;
+const endYear = document.getElementById("endYear").value;
+
+if (startYear) {
+    url += "&minYear=" + startYear;
+}
+
+if (endYear) {
+    url += "&maxYear=" + endYear;
+}
     
     console.log("Searching:", url);
 
