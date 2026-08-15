@@ -16,6 +16,16 @@ async function searchQB() {
         }
     });
 
+    const categoryCheckboxes = document.querySelectorAll("#category input");
+
+const categories = [];
+
+categoryCheckboxes.forEach(function(checkbox) {
+    if (checkbox.checked) {
+        categories.push(checkbox.value);
+    }
+});
+    
     const questionType = document.querySelector(
     "#questionType input:checked"
     ).value;
@@ -30,6 +40,10 @@ async function searchQB() {
         url += "&difficulties=" + difficulties.join(",");
     }
 
+    if (categories.length > 0) {
+    url += "&categories=" + categories.join(",");
+    }
+    
     console.log("Searching:", url);
 
     const response = await fetch(url);
