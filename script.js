@@ -96,14 +96,19 @@ if (endYear) {
     const questionDiv = document.createElement("div");
 
     if (question.question) {
-        // Tossup
-        questionDiv.innerHTML =
-            "<hr>" +
-            "<p>" + question.question + "</p>" +
-            "<strong>Answer: " +
-            (question.answer_sanitized || question.answer || "Unknown") +
-            "</strong>";
-    }
+    // Tossup
+    questionDiv.innerHTML =
+        "<hr>" +
+        "<p>" + question.question + "</p>" +
+        "<strong>Answer: " +
+        (question.answer_sanitized || question.answer || "Unknown") +
+        "</strong>" +
+        "<p><small>Source: " +
+        (question.set?.name || "Unknown") +
+        " — Packet " +
+        (question.packet?.number || "Unknown") +
+        "</small></p>";
+}
 
     else if (question.leadin) {
         // Bonus
