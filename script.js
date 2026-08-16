@@ -1,5 +1,5 @@
 async function searchQB() {
-    const answer = document.getElementById("answerInput").value;
+    const answer = document.getElementById("answerInput").value.trim();
 
     if (!answer) {
         alert("Please enter an answerline.");
@@ -64,7 +64,7 @@ async function searchQB() {
 
     console.log("Searching:", url);
 
-    // Get results from QBReader
+    // Get results
     const response = await fetch(url);
     const data = await response.json();
 
@@ -74,48 +74,85 @@ async function searchQB() {
 
     resultsDiv.innerHTML = "";
 
-    // Collect questions
+    // Normalize the searched answer
+    const searchedAnswer = answer.toLowerCase().trim();
+
+    // This will contain:
+    // - all tossups
+    // - only the relevant parts of bonuses
     let questions = [];
 
-    if (questionType === "tossup") {
-        questions = [
-            ...(data.tossups?.questionArray || [])
-        ];
+    // =========================
+    // TOSSUPS
+    // =========================
+
+    if (questionType === "tossup" || questionType === "all") {
+
+        const tossups = data.tossups?.questionArray || [];
+
+        tossups.forEach(function(tossup) {
+            questions.push({
+                type: "tossup",
+                question: tossup
+            });
+        });
     }
 
-    else if (questionType === "bonus") {
-        questions = [
-            ...(data.bonuses?.questionArray || [])
-        ];
+    // =========================
+    // BONUSES
+    // =========================
+
+    if (questionType === "bonus" || questionType === "all") {
+
+        const bonuses = data.bonuses?.questionArray || [];
+
+        bonuses.forEach(function(bonus) {
+
+            // Look through every answer in the bonus
+            for (let i = 0; i < bonus.answers_sanitized.length; i++) {
+
+                const bonusAnswer =
+                    bonus.answers_sanitized[i].toLowerCase();
+
+                // Check whether this individual bonus answer
+                // contains the searched answerline
+                if (bonusAnswer.includes(searchedAnswer)) {
+
+                    questions.push({
+                        type: "bonus",
+                        bonus: bonus,
+                        partIndex: i
+                    });
+
+                }
+            }
+        });
     }
 
-    else {
-        questions = [
-            ...(data.tossups?.questionArray || []),
-            ...(data.bonuses?.questionArray || [])
-        ];
-    }
+    // =========================
+    // NO RESULTS
+    // =========================
 
-    // No results
     if (questions.length === 0) {
         resultsDiv.innerHTML = "<p>No questions found.</p>";
         return;
     }
 
-    // Display questions
-    questions.forEach(function(question) {
+    // =========================
+    // DISPLAY RESULTS
+    // =========================
+
+    questions.forEach(function(item) {
 
         const questionDiv = document.createElement("div");
-
-        // DEBUG: show packet information in console
-        console.log("SET:", question.set);
-        console.log("PACKET:", question.packet);
 
         // =========================
         // TOSSUP
         // =========================
 
-        if (question.question) {
+        if (item.type === "tossup") {
+
+            const question = item.question;
 
             const setName =
                 question.set && question.set.name
@@ -146,50 +183,45 @@ async function searchQB() {
         }
 
         // =========================
-        // BONUS
+        // RELEVANT BONUS PART
         // =========================
 
-        else if (question.leadin) {
+        else if (item.type === "bonus") {
+
+            const bonus = item.bonus;
+            const i = item.partIndex;
 
             const setName =
-                question.set && question.set.name
-                    ? question.set.name
+                bonus.set && bonus.set.name
+                    ? bonus.set.name
                     : "Unknown";
 
             const packetNumber =
-                question.packet && question.packet.number
-                    ? question.packet.number
+                bonus.packet && bonus.packet.number
+                    ? bonus.packet.number
                     : "Unknown";
 
-            let bonusHTML =
+            questionDiv.innerHTML =
                 "<hr>" +
+
                 "<p><strong>Bonus:</strong> " +
-                question.leadin +
-                "</p>";
+                bonus.leadin_sanitized +
+                "</p>" +
 
-            for (let i = 0; i < question.parts.length; i++) {
+                "<p>" +
+                bonus.parts_sanitized[i] +
+                "</p>" +
 
-                bonusHTML +=
-                    "<p><strong>" +
-                    (i + 1) +
-                    ".</strong> " +
-                    question.parts[i] +
-                    "</p>" +
+                "<strong>Answer: " +
+                bonus.answers_sanitized[i] +
+                "</strong>" +
 
-                    "<strong>Answer: " +
-                    question.answers_sanitized[i] +
-                    "</strong>";
-            }
-
-            bonusHTML +=
                 "<p><small>" +
                 "Source: " +
                 setName +
                 " — Packet " +
                 packetNumber +
                 "</small></p>";
-
-            questionDiv.innerHTML = bonusHTML;
         }
 
         resultsDiv.appendChild(questionDiv);
