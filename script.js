@@ -74,12 +74,18 @@ async function searchQB() {
 
     resultsDiv.innerHTML = "";
 
-    // Normalize the searched answer
+    // Normalize searched answer
     const searchedAnswer = answer.toLowerCase().trim();
+
+    // This contains the material that will eventually go to the AI
+    let aiText = "";
+
+    // Add some basic context
+    aiText += "ANSWERLINE: " + answer + "\n\n";
 
     // This will contain:
     // - all tossups
-    // - only the relevant parts of bonuses
+    // - only relevant bonus parts
     let questions = [];
 
     // =========================
@@ -90,11 +96,20 @@ async function searchQB() {
 
         const tossups = data.tossups?.questionArray || [];
 
-        tossups.forEach(function(tossup) {
+        tossups.forEach(function(tossup, index) {
+
             questions.push({
                 type: "tossup",
                 question: tossup
             });
+
+            // Add tossup to AI text
+            aiText +=
+                "TOSSUP " + (index + 1) + ":\n" +
+                (tossup.question_sanitized ||
+                 tossup.question ||
+                 "") +
+                "\n\n";
         });
     }
 
@@ -106,6 +121,8 @@ async function searchQB() {
 
         const bonuses = data.bonuses?.questionArray || [];
 
+        let relevantBonusNumber = 1;
+
         bonuses.forEach(function(bonus) {
 
             // Look through every answer in the bonus
@@ -114,8 +131,8 @@ async function searchQB() {
                 const bonusAnswer =
                     bonus.answers_sanitized[i].toLowerCase();
 
-                // Check whether this individual bonus answer
-                // contains the searched answerline
+                // Only include the bonus part if its
+                // individual answerline matches the search
                 if (bonusAnswer.includes(searchedAnswer)) {
 
                     questions.push({
@@ -124,10 +141,33 @@ async function searchQB() {
                         partIndex: i
                     });
 
+                    // Add ONLY the relevant bonus part to AI text
+                    aiText +=
+                        "RELEVANT BONUS " +
+                        relevantBonusNumber +
+                        ":\n" +
+                        (bonus.parts_sanitized[i] ||
+                         bonus.parts[i] ||
+                         "") +
+                        "\nANSWER: " +
+                        (bonus.answers_sanitized[i] ||
+                         bonus.answers[i] ||
+                         "") +
+                        "\n\n";
+
+                    relevantBonusNumber++;
                 }
             }
         });
     }
+
+    // =========================
+    // SHOW AI TEXT IN CONSOLE
+    // =========================
+
+    console.log("========== AI INPUT ==========");
+    console.log(aiText);
+    console.log("========== END AI INPUT ==========");
 
     // =========================
     // NO RESULTS
